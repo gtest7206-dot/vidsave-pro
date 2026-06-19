@@ -71,6 +71,29 @@ def static_files(filename):
         return send_from_directory(BASE_DIR, filename)
     return jsonify({'error': 'Not found'}), 404
 
+def get_ydl_opts(custom_opts=None):
+    opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'noplaylist': True,
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-us,en;q=0.5',
+            'Sec-Fetch-Mode': 'navigate'
+        }
+    }
+    cookies_path = os.path.join(BASE_DIR, 'cookies.txt')
+    if os.path.isfile(cookies_path):
+        opts['cookiefile'] = cookies_path
+    if custom_opts:
+        headers = opts.get('http_headers', {}).copy()
+        if 'http_headers' in custom_opts:
+            headers.update(custom_opts['http_headers'])
+        opts.update(custom_opts)
+        opts['http_headers'] = headers
+    return opts
+
 # ══════════════════════════════════════════════════════════════════════════
 #  GET /api/info?url=...
 #  Returns video metadata + list of available formats
@@ -81,7 +104,7 @@ def api_info():
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
-    ydl_opts = {'quiet': True, 'no_warnings': True, 'noplaylist': True}
+    ydl_opts = get_ydl_opts()
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -257,16 +280,13 @@ def run_download_thread(task_id, url, format_id, is_audio):
     if is_audio and FFMPEG:
         pps = [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '320'}]
 
-    ydl_opts = {
-        'quiet':               True,
-        'no_warnings':         True,
+    ydl_opts = get_ydl_opts({
         'format':              format_id,
         'outtmpl':             out_template,
-        'noplaylist':          True,
         'postprocessors':      pps,
         'merge_output_format': 'mp4' if not is_audio else None,
         'progress_hooks':      [make_progress_hook(task_id)],
-    }
+    })
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
