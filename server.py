@@ -88,12 +88,6 @@ def get_ydl_opts(custom_opts=None):
         'no_warnings': False,
         'noplaylist': True,
         'logger': logger,
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-us,en;q=0.5',
-            'Sec-Fetch-Mode': 'navigate'
-        }
     }
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     for cookies_path in cookies_paths:
@@ -110,11 +104,7 @@ def get_ydl_opts(custom_opts=None):
             except Exception as e:
                 print(f"Error reading cookies.txt at {cookies_path}: {e}")
     if custom_opts:
-        headers = opts.get('http_headers', {}).copy()
-        if 'http_headers' in custom_opts:
-            headers.update(custom_opts['http_headers'])
         opts.update(custom_opts)
-        opts['http_headers'] = headers
     return opts, logger
 
 # ══════════════════════════════════════════════════════════════════════════
