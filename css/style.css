@@ -42,7 +42,7 @@
   /* Gradients */
   --grad-primary: linear-gradient(135deg, #00D084, #0099FF);
   --grad-hero: linear-gradient(135deg, #0A0E1A 0%, #111827 50%, #0D1829 100%);
-  --grad-card: linear-gradient(135deg, rgba(26,34,53,0.9), rgba(15,22,40,0.9));
+  --grad-card: linear-gradient(135deg, rgba(26, 34, 53, 0.9), rgba(15, 22, 40, 0.9));
 
   /* Spacing */
   --radius: 12px;
@@ -56,7 +56,9 @@
 }
 
 /* ===== RESET ===== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -117,8 +119,8 @@ button {
 .section-badge {
   display: inline-block;
   padding: 6px 16px;
-  background: linear-gradient(135deg, rgba(0,208,132,0.15), rgba(0,153,255,0.15));
-  border: 1px solid rgba(0,208,132,0.3);
+  background: linear-gradient(135deg, rgba(0, 208, 132, 0.15), rgba(0, 153, 255, 0.15));
+  border: 1px solid rgba(0, 208, 132, 0.3);
   border-radius: var(--radius-full);
   color: var(--primary);
   font-size: 0.75rem;
@@ -226,9 +228,10 @@ button {
   white-space: nowrap;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
   color: var(--text-primary);
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .nav-link.active {
@@ -258,7 +261,7 @@ button {
 
 .nav-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,208,132,0.4);
+  box-shadow: 0 6px 20px rgba(0, 208, 132, 0.4);
   color: #000 !important;
 }
 
@@ -313,7 +316,7 @@ button {
 
 .mobile-link:hover {
   color: var(--text-primary);
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* ===== BUTTONS ===== */
@@ -335,7 +338,7 @@ button {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,208,132,0.4);
+  box-shadow: 0 8px 24px rgba(0, 208, 132, 0.4);
   color: #000;
 }
 
@@ -356,7 +359,7 @@ button {
 }
 
 .btn-secondary:hover {
-  background: rgba(0,208,132,0.1);
+  background: rgba(0, 208, 132, 0.1);
   transform: translateY(-1px);
   color: var(--primary);
 }
@@ -398,8 +401,8 @@ button {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(0,208,132,0.08);
-  border: 1px solid rgba(0,208,132,0.2);
+  background: rgba(0, 208, 132, 0.08);
+  border: 1px solid rgba(0, 208, 132, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.8rem;
   color: var(--primary);
@@ -499,7 +502,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,208,132,0.4);
+  box-shadow: 0 4px 16px rgba(0, 208, 132, 0.4);
   opacity: 0;
   transform: translateY(16px);
   transition: var(--transition);
@@ -515,7 +518,7 @@ button {
 
 .back-to-top:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,208,132,0.5);
+  box-shadow: 0 8px 24px rgba(0, 208, 132, 0.5);
 }
 
 .back-to-top svg {
@@ -561,9 +564,12 @@ button {
 .page-hero::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(ellipse at 20% 50%, rgba(0,208,132,0.1) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 20%, rgba(0,153,255,0.1) 0%, transparent 60%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(0, 208, 132, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 153, 255, 0.1) 0%, transparent 60%);
 }
 
 .page-hero .container {
@@ -624,8 +630,8 @@ button {
 }
 
 .faq-item.open {
-  border-color: rgba(0,208,132,0.3);
-  box-shadow: 0 0 0 1px rgba(0,208,132,0.1);
+  border-color: rgba(0, 208, 132, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 208, 132, 0.1);
 }
 
 .faq-question {
@@ -671,7 +677,8 @@ button {
   max-height: 500px;
 }
 
-.faq-answer p, .faq-answer li {
+.faq-answer p,
+.faq-answer li {
   color: var(--text-secondary);
   line-height: 1.7;
   padding: 0 24px 20px;
@@ -688,6 +695,7 @@ button {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+
   .footer-links-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -697,15 +705,19 @@ button {
   .nav {
     display: none;
   }
+
   .hamburger {
     display: flex;
   }
+
   .section {
     padding: 60px 0;
   }
+
   .footer-links-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .footer-bottom {
     flex-direction: column;
     text-align: center;
