@@ -331,7 +331,7 @@ def run_download_thread(task_id, url, format_id, is_audio):
     if is_audio and FFMPEG:
         pps = [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '320'}]
 
-    ydl_opts = get_ydl_opts({
+    ydl_opts, _ = get_ydl_opts({
         'format':              format_id,
         'outtmpl':             out_template,
         'postprocessors':      pps,
