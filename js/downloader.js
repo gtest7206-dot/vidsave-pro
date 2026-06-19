@@ -9,7 +9,7 @@
 // change the URL below to your deployed Python backend URL (e.g. on Render).
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? ''
-  : 'https://YOUR-BACKEND-URL-HERE'; // Replace this with your backend URL after deploying it!
+  : 'https://vidsave-backend-pgh9.onrender.com';
 
 let currentVideoUrl = '';
 
