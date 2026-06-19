@@ -71,11 +71,23 @@ def static_files(filename):
         return send_from_directory(BASE_DIR, filename)
     return jsonify({'error': 'Not found'}), 404
 
+class MyLogger:
+    def __init__(self):
+        self.messages = []
+    def debug(self, msg): pass
+    def info(self, msg): pass
+    def warning(self, msg):
+        self.messages.append(msg)
+    def error(self, msg):
+        self.messages.append(msg)
+
 def get_ydl_opts(custom_opts=None):
+    logger = MyLogger()
     opts = {
         'quiet': True,
-        'no_warnings': True,
+        'no_warnings': False,
         'noplaylist': True,
+        'logger': logger,
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -103,7 +115,32 @@ def get_ydl_opts(custom_opts=None):
             headers.update(custom_opts['http_headers'])
         opts.update(custom_opts)
         opts['http_headers'] = headers
-    return opts
+    return opts, logger
+
+# ══════════════════════════════════════════════════════════════════════════
+#  Debug Cookies API
+# ══════════════════════════════════════════════════════════════════════════
+@app.route('/api/debug/cookies')
+def api_debug_cookies():
+    results = {}
+    cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
+    for p in cookies_paths:
+        exists = os.path.isfile(p)
+        results[p] = {
+            'exists': exists,
+            'size': os.path.getsize(p) if exists else 0,
+            'has_youtube': False,
+            'preview': ''
+        }
+        if exists:
+            try:
+                with open(p, 'r', errors='ignore') as f:
+                    content = f.read()
+                results[p]['has_youtube'] = 'youtube.com' in content or 'google.com' in content
+                results[p]['preview'] = content[:100].replace('\n', ' ')
+            except Exception as e:
+                results[p]['error'] = str(e)
+    return jsonify(results)
 
 # ══════════════════════════════════════════════════════════════════════════
 #  GET /api/info?url=...
@@ -115,20 +152,21 @@ def api_info():
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
-    ydl_opts = get_ydl_opts()
+    ydl_opts, logger = get_ydl_opts()
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
     except yt_dlp.utils.DownloadError as e:
         msg = str(e)
+        logs = " | Logs: " + "; ".join(logger.messages) if logger.messages else ""
         if 'Private video' in msg:
             return jsonify({'error': 'This video is private and cannot be downloaded.'}), 400
         if 'age' in msg.lower():
             return jsonify({'error': 'This video is age-restricted. Please try another video.'}), 400
         if 'Requested format is not available' in msg or 'Video unavailable' in msg:
-            return jsonify({'error': 'Video formats are encrypted or unavailable. Make sure Node.js is installed on the server.'}), 400
-        return jsonify({'error': f'Could not fetch video: {_short(msg)}'}), 400
+            return jsonify({'error': f'Video formats are encrypted or unavailable. Make sure Node.js is installed on the server.{logs}'}), 400
+        return jsonify({'error': f'Could not fetch video: {_short(msg)}{logs}'}), 400
     except Exception as e:
         return jsonify({'error': _short(str(e))}), 500
 
