@@ -151,6 +151,12 @@ def api_debug_node():
         results['ffmpeg'] = {'available': True, 'version': res.stdout.split('\n')[0]}
     except Exception as e:
         results['ffmpeg'] = {'available': False, 'error': str(e)}
+
+    try:
+        res = subprocess.run(['python', '-m', 'yt_dlp', '--version'], capture_output=True, text=True, check=True)
+        results['yt_dlp'] = {'available': True, 'version': res.stdout.strip()}
+    except Exception as e:
+        results['yt_dlp'] = {'available': False, 'error': str(e)}
         
     return jsonify(results)
 
