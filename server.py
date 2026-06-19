@@ -83,18 +83,20 @@ def get_ydl_opts(custom_opts=None):
             'Sec-Fetch-Mode': 'navigate'
         }
     }
-    cookies_path = os.path.join(BASE_DIR, 'cookies.txt')
-    if os.path.isfile(cookies_path):
-        try:
-            with open(cookies_path, 'r', errors='ignore') as f:
-                content = f.read()
-            if 'youtube.com' in content or 'google.com' in content:
-                opts['cookiefile'] = cookies_path
-                print("Loaded cookies.txt for YouTube")
-            else:
-                print("cookies.txt found but ignored (no youtube/google cookies).")
-        except Exception as e:
-            print(f"Error reading cookies.txt: {e}")
+    cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
+    for cookies_path in cookies_paths:
+        if os.path.isfile(cookies_path):
+            try:
+                with open(cookies_path, 'r', errors='ignore') as f:
+                    content = f.read()
+                if 'youtube.com' in content or 'google.com' in content:
+                    opts['cookiefile'] = cookies_path
+                    print(f"Loaded cookies.txt for YouTube from {cookies_path}")
+                    break
+                else:
+                    print(f"cookies.txt at {cookies_path} found but ignored (no youtube/google cookies).")
+            except Exception as e:
+                print(f"Error reading cookies.txt at {cookies_path}: {e}")
     if custom_opts:
         headers = opts.get('http_headers', {}).copy()
         if 'http_headers' in custom_opts:
