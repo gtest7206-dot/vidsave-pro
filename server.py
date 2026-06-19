@@ -87,6 +87,7 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
         'no_warnings': False,
         'noplaylist': True,
         'logger': logger,
+        'js_runtimes': ['node', 'deno']
     }
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     if use_cookies:
