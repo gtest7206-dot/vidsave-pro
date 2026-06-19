@@ -126,6 +126,8 @@ def api_info():
             return jsonify({'error': 'This video is private and cannot be downloaded.'}), 400
         if 'age' in msg.lower():
             return jsonify({'error': 'This video is age-restricted. Please try another video.'}), 400
+        if 'Requested format is not available' in msg or 'Video unavailable' in msg:
+            return jsonify({'error': 'Video formats are encrypted or unavailable. Make sure Node.js is installed on the server.'}), 400
         return jsonify({'error': f'Could not fetch video: {_short(msg)}'}), 400
     except Exception as e:
         return jsonify({'error': _short(str(e))}), 500
