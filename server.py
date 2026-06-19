@@ -100,10 +100,10 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
                         opts['cookiefile'] = cookies_path
                         print(f"Loaded cookies.txt for YouTube from {cookies_path}")
                         break
-                else:
-                    print(f"cookies.txt at {cookies_path} found but ignored (no youtube/google cookies).")
-            except Exception as e:
-                print(f"Error reading cookies.txt at {cookies_path}: {e}")
+                    else:
+                        print(f"cookies.txt at {cookies_path} found but ignored (no youtube/google cookies).")
+                except Exception as e:
+                    print(f"Error reading cookies.txt at {cookies_path}: {e}")
     if custom_opts:
         opts.update(custom_opts)
     return opts, logger
