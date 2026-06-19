@@ -80,7 +80,7 @@ class MyLogger:
     def error(self, msg):
         self.messages.append(msg)
 
-def get_ydl_opts(custom_opts=None):
+def get_ydl_opts(custom_opts=None, use_cookies=True):
     logger = MyLogger()
     opts = {
         'quiet': True,
@@ -94,15 +94,16 @@ def get_ydl_opts(custom_opts=None):
         }
     }
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
-    for cookies_path in cookies_paths:
-        if os.path.isfile(cookies_path):
-            try:
-                with open(cookies_path, 'r', errors='ignore') as f:
-                    content = f.read()
-                if 'youtube.com' in content or 'google.com' in content:
-                    opts['cookiefile'] = cookies_path
-                    print(f"Loaded cookies.txt for YouTube from {cookies_path}")
-                    break
+    if use_cookies:
+        for cookies_path in cookies_paths:
+            if os.path.isfile(cookies_path):
+                try:
+                    with open(cookies_path, 'r', errors='ignore') as f:
+                        content = f.read()
+                    if 'youtube.com' in content or 'google.com' in content:
+                        opts['cookiefile'] = cookies_path
+                        print(f"Loaded cookies.txt for YouTube from {cookies_path}")
+                        break
                 else:
                     print(f"cookies.txt at {cookies_path} found but ignored (no youtube/google cookies).")
             except Exception as e:
@@ -167,7 +168,8 @@ def api_info():
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
-    ydl_opts, logger = get_ydl_opts()
+    nocookies = request.args.get('nocookies', 'false').lower() == 'true'
+    ydl_opts, logger = get_ydl_opts(use_cookies=not nocookies)
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
