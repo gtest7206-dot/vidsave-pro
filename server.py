@@ -16,7 +16,6 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 # ── Flask app ─────────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path='')
-download_tasks = {}
 
 # ── Check ffmpeg (needed to merge video+audio for 1080p+ on YouTube) ───────
 FFMPEG_PATH = shutil.which('ffmpeg')
@@ -88,6 +87,11 @@ def get_ydl_opts(custom_opts=None):
         'no_warnings': False,
         'noplaylist': True,
         'logger': logger,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['tvhtml5', 'web']
+            }
+        }
     }
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     for cookies_path in cookies_paths:
@@ -284,9 +288,29 @@ def api_info():
     })
 
 
-# ══════════════════════════════════════════════════════════════════════════
-#  Background Downloading APIs with Progress Updates
-# ══════════════════════════════════════════════════════════════════════════
+import json
+
+def _get_task_path(task_id):
+    return os.path.join(TEMP_DIR, f'task_{task_id}.json')
+
+def _save_task(task_id, data):
+    try:
+        path = _get_task_path(task_id)
+        with open(path, 'w') as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"Error saving task {task_id}: {e}")
+
+def _load_task(task_id):
+    try:
+        path = _get_task_path(task_id)
+        if os.path.isfile(path):
+            with open(path, 'r') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Error loading task {task_id}: {e}")
+    return None
+
 def make_progress_hook(task_id):
     def hook(d):
         if d['status'] == 'downloading':
@@ -300,17 +324,21 @@ def make_progress_hook(task_id):
             speed = d.get('_speed_str') or 'N/A'
             eta = d.get('_eta_str') or 'N/A'
 
-            download_tasks[task_id].update({
+            task = _load_task(task_id) or {}
+            task.update({
                 'status': 'downloading',
                 'progress': percent,
                 'speed': speed.strip(),
                 'eta': eta.strip()
             })
+            _save_task(task_id, task)
         elif d['status'] == 'finished':
-            download_tasks[task_id].update({
+            task = _load_task(task_id) or {}
+            task.update({
                 'status': 'processing',
                 'progress': 100
             })
+            _save_task(task_id, task)
     return hook
 
 def run_download_thread(task_id, url, format_id, is_audio):
@@ -333,7 +361,9 @@ def run_download_thread(task_id, url, format_id, is_audio):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             title = info.get('title', 'video')
-            download_tasks[task_id]['title'] = title
+            task = _load_task(task_id) or {}
+            task['title'] = title
+            _save_task(task_id, task)
 
         # Find the downloaded file
         dl_file = None
@@ -343,22 +373,28 @@ def run_download_thread(task_id, url, format_id, is_audio):
                 break
 
         if not dl_file or not os.path.isfile(dl_file):
-            download_tasks[task_id].update({
+            task = _load_task(task_id) or {}
+            task.update({
                 'status': 'failed',
                 'error': 'File not found after download. Please try a different quality.'
             })
+            _save_task(task_id, task)
             return
 
-        download_tasks[task_id].update({
+        task = _load_task(task_id) or {}
+        task.update({
             'status': 'completed',
             'file_path': dl_file,
             'progress': 100
         })
+        _save_task(task_id, task)
     except Exception as e:
-        download_tasks[task_id].update({
+        task = _load_task(task_id) or {}
+        task.update({
             'status': 'failed',
             'error': str(e)
         })
+        _save_task(task_id, task)
 
 @app.route('/api/download/start')
 def api_download_start():
@@ -370,7 +406,7 @@ def api_download_start():
         return jsonify({'error': 'No URL provided'}), 400
 
     task_id = str(uuid.uuid4())
-    download_tasks[task_id] = {
+    task = {
         'status': 'starting',
         'progress': 0,
         'speed': 'N/A',
@@ -379,6 +415,7 @@ def api_download_start():
         'file_path': None,
         'error': None
     }
+    _save_task(task_id, task)
 
     t = threading.Thread(target=run_download_thread, args=(task_id, url, format_id, is_audio))
     t.daemon = True
@@ -389,7 +426,7 @@ def api_download_start():
 @app.route('/api/download/status')
 def api_download_status():
     task_id = request.args.get('task_id', '')
-    task = download_tasks.get(task_id)
+    task = _load_task(task_id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
     return jsonify(task)
@@ -397,7 +434,7 @@ def api_download_status():
 @app.route('/api/download/file')
 def api_download_file():
     task_id = request.args.get('task_id', '')
-    task = download_tasks.get(task_id)
+    task = _load_task(task_id)
     if not task or task.get('status') != 'completed':
         return jsonify({'error': 'File not ready or task not found'}), 404
 
@@ -416,7 +453,9 @@ def api_download_file():
         try:
             if os.path.isfile(dl_file):
                 os.remove(dl_file)
-            download_tasks.pop(task_id, None)
+            path = _get_task_path(task_id)
+            if os.path.isfile(path):
+                os.remove(path)
         except Exception:
             pass
     threading.Timer(300, _cleanup).start()
