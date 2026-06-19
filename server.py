@@ -90,7 +90,16 @@ def get_ydl_opts(custom_opts=None):
     }
     cookies_path = os.path.join(BASE_DIR, 'cookies.txt')
     if os.path.isfile(cookies_path):
-        opts['cookiefile'] = cookies_path
+        try:
+            with open(cookies_path, 'r', errors='ignore') as f:
+                content = f.read()
+            if 'youtube.com' in content or 'google.com' in content:
+                opts['cookiefile'] = cookies_path
+                print("Loaded cookies.txt for YouTube")
+            else:
+                print("cookies.txt found but ignored (no youtube/google cookies).")
+        except Exception as e:
+            print(f"Error reading cookies.txt: {e}")
     if custom_opts:
         headers = opts.get('http_headers', {}).copy()
         if 'http_headers' in custom_opts:
