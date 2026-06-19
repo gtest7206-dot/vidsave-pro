@@ -1,0 +1,361 @@
+/* ============================
+   Platform Page Styles
+   ============================ */
+
+/* Platform Hero */
+.platform-hero {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 0 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.platform-hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ph-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.12;
+}
+
+.tiktok-hero .ph-glow-1 { background: #69C9D0; top: -100px; left: -100px; }
+.tiktok-hero .ph-glow-2 { background: #EE1D52; bottom: -100px; right: -100px; }
+.instagram-hero .ph-glow-1 { background: #833AB4; top: -100px; left: -100px; }
+.instagram-hero .ph-glow-2 { background: #F77737; bottom: -100px; right: -100px; }
+.facebook-hero .ph-glow-1 { background: #1877F2; top: -100px; left: -100px; }
+.facebook-hero .ph-glow-2 { background: #0099FF; bottom: -100px; right: -100px; }
+
+.platform-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.platform-hero h1 {
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 900;
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+
+.platform-hero p {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.platform-logo-big {
+  width: 80px;
+  height: 80px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.platform-logo-big svg {
+  width: 44px;
+  height: 44px;
+  color: white;
+}
+
+.tiktok-bg { background: #000; }
+.instagram-bg { background: linear-gradient(135deg, #833AB4, #FD1D1D, #F77737); }
+.facebook-bg { background: #1877F2; }
+
+.platform-features {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-badge {
+  padding: 6px 14px;
+  background: rgba(0,208,132,0.1);
+  border: 1px solid rgba(0,208,132,0.25);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Download box on platform pages */
+.platform-hero .download-box {
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Platform hero backgrounds */
+.tiktok-hero { background: linear-gradient(135deg, #0A0E1A 0%, #0D0A15 100%); }
+.instagram-hero { background: linear-gradient(135deg, #0A0E1A 0%, #150A0D 100%); }
+.facebook-hero { background: linear-gradient(135deg, #0A0E1A 0%, #0A0E1A 100%); }
+
+/* Quality Options reuse from home.css */
+.download-box {
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.download-form {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.url-input {
+  width: 100%;
+  padding: 18px 60px 18px 52px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: var(--font);
+  transition: var(--transition);
+  outline: none;
+}
+
+.url-input::placeholder { color: var(--text-muted); }
+.url-input:focus {
+  border-color: var(--primary);
+  background: rgba(0,208,132,0.04);
+  box-shadow: 0 0 0 3px rgba(0,208,132,0.1);
+}
+
+.paste-btn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+}
+.paste-btn:hover { color: var(--primary); background: rgba(0,208,132,0.1); }
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 32px;
+  background: var(--grad-primary);
+  color: #000;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.download-btn svg { stroke: #000; }
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,208,132,0.5);
+}
+
+.form-note {
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.results-area {
+  margin-bottom: 24px;
+  animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.video-info {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.video-thumb {
+  width: 180px;
+  height: 101px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.video-meta h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+.video-meta p { font-size: 0.85rem; color: var(--text-muted); }
+
+.quality-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.quality-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.quality-btn:hover {
+  border-color: var(--primary);
+  background: rgba(0,208,132,0.06);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quality-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--grad-primary);
+  color: #000;
+}
+
+.quality-badge.mp3 {
+  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  color: white;
+}
+
+.loading-area {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Steps on platform pages */
+.steps-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 48px;
+}
+
+.step-card {
+  flex: 1;
+  padding: 32px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  position: relative;
+  transition: var(--transition);
+}
+
+.step-card:hover {
+  border-color: rgba(0,208,132,0.3);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.step-number {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--grad-primary);
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+.step-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(0,208,132,0.1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--primary);
+}
+.step-icon svg { width: 28px; height: 28px; }
+.step-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+.step-card p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+
+.step-connector {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 -8px;
+  border-radius: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .platform-hero-inner { flex-direction: column; gap: 16px; }
+  .download-form { flex-direction: column; }
+  .download-btn { padding: 16px; justify-content: center; }
+  .steps-grid { flex-direction: column; gap: 24px; }
+  .step-connector { width: 2px; height: 40px; align-self: center; margin: -16px 0; background: linear-gradient(180deg, var(--primary), var(--secondary)); }
+}
