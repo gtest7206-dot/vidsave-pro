@@ -1,25 +1,27 @@
+FROM node:22-slim AS node
 FROM python:3.10-slim
 
-# Install system dependencies: ffmpeg, nodejs (for yt-dlp JS challenge solving)
+# Install system dependencies: ffmpeg
 RUN apt-get update && apt-get install -y \
     ffmpeg \
-    curl \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+        && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
+        # Copy node binary from node image
+        COPY --from=node /usr/local/bin/node /usr/local/bin/node
 
-# Install Python requirements (yt-dlp[default] includes bundled EJS solver scripts)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+        # Set working directory
+        WORKDIR /app
 
-# Copy the rest of the application
-COPY . .
+        # Install Python requirements
+        COPY requirements.txt .
+        RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port
-EXPOSE 5000
+        # Copy the rest of the application
+        COPY . .
 
-# Run the server
-CMD ["python", "server.py"]
+        # Expose port
+        EXPOSE 5000
+
+        # Run the server
+        CMD ["python", "server.py"]
+        
