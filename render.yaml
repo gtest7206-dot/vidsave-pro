@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: vidsave-backend
+    runtime: docker
+    plan: free
