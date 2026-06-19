@@ -137,6 +137,27 @@ def api_debug_cookies():
     return jsonify(results)
 
 # ══════════════════════════════════════════════════════════════════════════
+#  Debug Node API
+# ══════════════════════════════════════════════════════════════════════════
+@app.route('/api/debug/node')
+def api_debug_node():
+    import subprocess
+    results = {}
+    try:
+        res = subprocess.run(['node', '--version'], capture_output=True, text=True, check=True)
+        results['node'] = {'available': True, 'version': res.stdout.strip()}
+    except Exception as e:
+        results['node'] = {'available': False, 'error': str(e)}
+
+    try:
+        res = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, check=True)
+        results['ffmpeg'] = {'available': True, 'version': res.stdout.split('\n')[0]}
+    except Exception as e:
+        results['ffmpeg'] = {'available': False, 'error': str(e)}
+        
+    return jsonify(results)
+
+# ══════════════════════════════════════════════════════════════════════════
 #  GET /api/info?url=...
 #  Returns video metadata + list of available formats
 # ══════════════════════════════════════════════════════════════════════════
