@@ -5,7 +5,7 @@ Run: python server.py
 Then open: http://localhost:5000
 """
 
-import os, uuid, shutil, threading, tempfile
+import os, uuid, shutil, threading, tempfile, traceback
 from flask import Flask, jsonify, request, send_file, send_from_directory
 import yt_dlp
 
@@ -99,10 +99,10 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
         opts['js_runtimes'] = 'node'
     else:
         # These clients use OAuth2/TV tokens and don't need JS solving
+        # extractor_args format: each value must be a list of strings
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['android', 'web_creator', 'tv_embedded'],
-                'player_skip': ['webpage', 'configs'],
+                'player_client': ['android', 'tv_embedded', 'web_creator'],
             }
         }
 
@@ -178,6 +178,38 @@ def api_debug_node():
     return jsonify(results)
 
 # ══════════════════════════════════════════════════════════════════════════
+#  Quick test / verbose diagnostic endpoint
+# ══════════════════════════════════════════════════════════════════════════
+@app.route('/api/test')
+def api_test():
+    """Test YouTube extraction with a known short video and return full debug info."""
+    test_url = request.args.get('url', 'https://www.youtube.com/watch?v=jNQXAC9IVRw')
+    ydl_opts, logger = get_ydl_opts(use_cookies=False)
+    ydl_opts['verbose'] = False  # keep quiet but capture errors
+
+    result = {
+        'node_available': NODE_AVAILABLE,
+        'ffmpeg_available': FFMPEG,
+        'ydl_opts_keys': list(ydl_opts.keys()),
+        'url': test_url,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(test_url, download=False)
+        result['success'] = True
+        result['title'] = info.get('title')
+        result['formats_count'] = len(info.get('formats', []))
+        result['logger_messages'] = logger.messages
+    except Exception as e:
+        result['success'] = False
+        result['error'] = str(e)
+        result['traceback'] = traceback.format_exc()
+        result['logger_messages'] = logger.messages
+
+    return jsonify(result)
+
+# ══════════════════════════════════════════════════════════════════════════
 #  GET /api/info?url=...
 #  Returns video metadata + list of available formats
 # ══════════════════════════════════════════════════════════════════════════
@@ -204,7 +236,9 @@ def api_info():
             return jsonify({'error': f'Video formats are encrypted or unavailable. Make sure Node.js is installed on the server.{logs}'}), 400
         return jsonify({'error': f'Could not fetch video: {_short(msg)}{logs}'}), 400
     except Exception as e:
-        return jsonify({'error': _short(str(e))}), 500
+        tb = traceback.format_exc()
+        print(f"[ERROR] api_info exception: {tb}")
+        return jsonify({'error': _short(str(e)), 'traceback': tb[:500]}), 500
 
     formats_raw = info.get('formats', [])
 
