@@ -80,6 +80,10 @@ class MyLogger:
     def error(self, msg):
         self.messages.append(msg)
 
+# ── Check if Node.js is available for JS signature solving ──────────────────
+NODE_AVAILABLE = shutil.which('node') is not None
+print(f"Node.js available: {NODE_AVAILABLE} {'[YES]' if NODE_AVAILABLE else '[NO - will use fallback clients]'}")
+
 def get_ydl_opts(custom_opts=None, use_cookies=True):
     logger = MyLogger()
     opts = {
@@ -87,8 +91,21 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
         'no_warnings': False,
         'noplaylist': True,
         'logger': logger,
-        'js_runtimes': 'node',
     }
+
+    # Use Node.js for JS signature solving if available, otherwise use
+    # Android/TV clients that don't require JS decryption
+    if NODE_AVAILABLE:
+        opts['js_runtimes'] = 'node'
+    else:
+        # These clients use OAuth2/TV tokens and don't need JS solving
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'web_creator', 'tv_embedded'],
+                'player_skip': ['webpage', 'configs'],
+            }
+        }
+
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     if use_cookies:
         for cookies_path in cookies_paths:
