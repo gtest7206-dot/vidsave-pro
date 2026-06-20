@@ -88,6 +88,10 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
         'noplaylist': True,
         'logger': logger,
         'remote_components': ['ejs:github'],
+        'js_runtimes': {
+            'node': {},
+            'deno': {}
+        },
     }
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     if use_cookies:
@@ -321,8 +325,11 @@ def _get_task_path(task_id):
 def _save_task(task_id, data):
     try:
         path = _get_task_path(task_id)
-        with open(path, 'w') as f:
+        # Atomic write to avoid race conditions during polling
+        temp_fd, temp_path = tempfile.mkstemp(dir=TEMP_DIR, prefix=f'task_{task_id}_', suffix='.tmp')
+        with os.fdopen(temp_fd, 'w') as f:
             json.dump(data, f)
+        os.replace(temp_path, path)
     except Exception as e:
         print(f"Error saving task {task_id}: {e}")
 
