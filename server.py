@@ -96,7 +96,8 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
     # Use Node.js for JS signature solving if available, otherwise use
     # Android/TV clients that don't require JS decryption
     if NODE_AVAILABLE:
-        opts['js_runtimes'] = 'node'
+        # yt-dlp 2026+ requires dict format: {runtime_name: {config}}
+        opts['js_runtimes'] = {'node': {}}
     else:
         # These clients use OAuth2/TV tokens and don't need JS solving
         # extractor_args format: each value must be a list of strings
