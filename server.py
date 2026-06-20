@@ -93,19 +93,17 @@ def get_ydl_opts(custom_opts=None, use_cookies=True):
         'logger': logger,
     }
 
-    # Use Node.js for JS signature solving if available, otherwise use
-    # Android/TV clients that don't require JS decryption
+    # Use Node.js for JS signature solving if available
     if NODE_AVAILABLE:
         # yt-dlp 2026+ requires dict format: {runtime_name: {config}}
         opts['js_runtimes'] = {'node': {}}
-    else:
-        # These clients use OAuth2/TV tokens and don't need JS solving
-        # extractor_args format: each value must be a list of strings
-        opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['android', 'tv_embedded', 'web_creator'],
-            }
+
+    # Configure youtube extractor args to prioritize clients that bypass signature challenges
+    opts['extractor_args'] = {
+        'youtube': {
+            'player_client': ['android', 'ios', 'tv_embedded', 'web_creator'],
         }
+    }
 
     cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
     if use_cookies:
