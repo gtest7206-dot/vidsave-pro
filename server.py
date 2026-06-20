@@ -185,7 +185,8 @@ def api_debug_node():
 def api_test():
     """Test YouTube extraction with a known short video and return full debug info."""
     test_url = request.args.get('url', 'https://www.youtube.com/watch?v=jNQXAC9IVRw')
-    ydl_opts, logger = get_ydl_opts(use_cookies=False)
+    nocookies = request.args.get('nocookies', 'false').lower() == 'true'
+    ydl_opts, logger = get_ydl_opts(use_cookies=not nocookies)
     ydl_opts['verbose'] = False  # keep quiet but capture errors
 
     result = {
