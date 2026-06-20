@@ -183,31 +183,92 @@ def api_debug_node():
 def api_test():
     """Test YouTube extraction with a known short video and return full debug info."""
     test_url = request.args.get('url', 'https://www.youtube.com/watch?v=jNQXAC9IVRw')
-    nocookies = request.args.get('nocookies', 'false').lower() == 'true'
-    ydl_opts, logger = get_ydl_opts(use_cookies=not nocookies)
-    ydl_opts['verbose'] = False  # keep quiet but capture errors
+    
+    # Define the configurations to test
+    configs = [
+        {
+            'name': 'IPv4 + Cookies + All Clients',
+            'use_cookies': True,
+            'force_ipv4': True,
+            'extractor_args': {'youtube': {'player_client': ['android', 'ios', 'tv_embedded', 'web_creator']}}
+        },
+        {
+            'name': 'IPv4 + Cookies + Default Clients',
+            'use_cookies': True,
+            'force_ipv4': True,
+            'extractor_args': None
+        },
+        {
+            'name': 'IPv6 + Cookies + All Clients',
+            'use_cookies': True,
+            'force_ipv6': True,
+            'extractor_args': {'youtube': {'player_client': ['android', 'ios', 'tv_embedded', 'web_creator']}}
+        },
+        {
+            'name': 'IPv4 + No Cookies + All Clients',
+            'use_cookies': False,
+            'force_ipv4': True,
+            'extractor_args': {'youtube': {'player_client': ['android', 'ios', 'tv_embedded', 'web_creator']}}
+        },
+        {
+            'name': 'IPv4 + No Cookies + tv_simply Client',
+            'use_cookies': False,
+            'force_ipv4': True,
+            'extractor_args': {'youtube': {'player_client': ['tv_simply']}}
+        },
+    ]
 
-    result = {
+    results = []
+
+    for cfg in configs:
+        logger = MyLogger()
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': False,
+            'noplaylist': True,
+            'logger': logger,
+        }
+        if NODE_AVAILABLE:
+            ydl_opts['js_runtimes'] = {'node': {}}
+            
+        if cfg.get('force_ipv4'):
+            ydl_opts['source_address'] = '0.0.0.0'
+        
+        if cfg.get('extractor_args'):
+            ydl_opts['extractor_args'] = cfg['extractor_args']
+            
+        if cfg['use_cookies']:
+            cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
+            for cookies_path in cookies_paths:
+                if os.path.isfile(cookies_path):
+                    ydl_opts['cookiefile'] = cookies_path
+                    break
+
+        cfg_res = {
+            'config_name': cfg['name'],
+            'success': False,
+            'error': None,
+            'logger_messages': []
+        }
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(test_url, download=False)
+            cfg_res['success'] = True
+            cfg_res['title'] = info.get('title')
+            cfg_res['formats_count'] = len(info.get('formats', []))
+        except Exception as e:
+            cfg_res['success'] = False
+            cfg_res['error'] = str(e)
+            cfg_res['logger_messages'] = logger.messages
+            
+        results.append(cfg_res)
+
+    return jsonify({
         'node_available': NODE_AVAILABLE,
         'ffmpeg_available': FFMPEG,
-        'ydl_opts_keys': list(ydl_opts.keys()),
-        'url': test_url,
-    }
-
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(test_url, download=False)
-        result['success'] = True
-        result['title'] = info.get('title')
-        result['formats_count'] = len(info.get('formats', []))
-        result['logger_messages'] = logger.messages
-    except Exception as e:
-        result['success'] = False
-        result['error'] = str(e)
-        result['traceback'] = traceback.format_exc()
-        result['logger_messages'] = logger.messages
-
-    return jsonify(result)
+        'results': results
+    })
 
 # ══════════════════════════════════════════════════════════════════════════
 #  GET /api/info?url=...
