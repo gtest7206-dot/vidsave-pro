@@ -218,56 +218,63 @@ def api_test():
         },
     ]
 
-    results = []
+    # Determine which config to test
+    try:
+        cfg_index = int(request.args.get('index', 0))
+    except ValueError:
+        cfg_index = 0
 
-    for cfg in configs:
-        logger = MyLogger()
-        ydl_opts = {
-            'quiet': True,
-            'no_warnings': False,
-            'noplaylist': True,
-            'logger': logger,
-        }
-        if NODE_AVAILABLE:
-            ydl_opts['js_runtimes'] = {'node': {}}
-            
-        if cfg.get('force_ipv4'):
-            ydl_opts['source_address'] = '0.0.0.0'
+    if cfg_index < 0 or cfg_index >= len(configs):
+        cfg_index = 0
+
+    cfg = configs[cfg_index]
+    logger = MyLogger()
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': False,
+        'noplaylist': True,
+        'logger': logger,
+    }
+    if NODE_AVAILABLE:
+        ydl_opts['js_runtimes'] = {'node': {}}
         
-        if cfg.get('extractor_args'):
-            ydl_opts['extractor_args'] = cfg['extractor_args']
-            
-        if cfg['use_cookies']:
-            cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
-            for cookies_path in cookies_paths:
-                if os.path.isfile(cookies_path):
-                    ydl_opts['cookiefile'] = cookies_path
-                    break
+    if cfg.get('force_ipv4'):
+        ydl_opts['source_address'] = '0.0.0.0'
+    
+    if cfg.get('extractor_args'):
+        ydl_opts['extractor_args'] = cfg['extractor_args']
+        
+    if cfg['use_cookies']:
+        cookies_paths = [os.path.join(BASE_DIR, 'cookies.txt'), '/etc/secrets/cookies.txt']
+        for cookies_path in cookies_paths:
+            if os.path.isfile(cookies_path):
+                ydl_opts['cookiefile'] = cookies_path
+                break
 
-        cfg_res = {
-            'config_name': cfg['name'],
-            'success': False,
-            'error': None,
-            'logger_messages': []
-        }
+    cfg_res = {
+        'config_name': cfg['name'],
+        'success': False,
+        'error': None,
+        'logger_messages': []
+    }
 
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(test_url, download=False)
-            cfg_res['success'] = True
-            cfg_res['title'] = info.get('title')
-            cfg_res['formats_count'] = len(info.get('formats', []))
-        except Exception as e:
-            cfg_res['success'] = False
-            cfg_res['error'] = str(e)
-            cfg_res['logger_messages'] = logger.messages
-            
-        results.append(cfg_res)
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(test_url, download=False)
+        cfg_res['success'] = True
+        cfg_res['title'] = info.get('title')
+        cfg_res['formats_count'] = len(info.get('formats', []))
+    except Exception as e:
+        cfg_res['success'] = False
+        cfg_res['error'] = str(e)
+        cfg_res['logger_messages'] = logger.messages
 
     return jsonify({
         'node_available': NODE_AVAILABLE,
         'ffmpeg_available': FFMPEG,
-        'results': results
+        'tested_index': cfg_index,
+        'total_configs': len(configs),
+        'result': cfg_res
     })
 
 # ══════════════════════════════════════════════════════════════════════════
